@@ -10,6 +10,8 @@
 
 uint8_t led_state = 0;  // LED状态变量，0表示熄灭，1表示点亮
 
+void key_isr(void);  // 函数声明，告诉编译器这个函数存在
+
 /**
  * @brief 外部中断初始化函数
  * @details 初始化按键模块，并配置外部中断
