@@ -1,31 +1,58 @@
 #ifndef __VERSION_H
 #define __VERSION_H
 
-/* 版本信息 */
+/* ==================== 版本信息 ==================== */
 #define VERSION         "V1.5.280"      // 当前版本号
 #define VERSION_DATE    "2026-05-28"    // 版本发布日期
 
-/* 设备信息 */
-#define DEVICE_ID       "PCT_100_FCs"   // 设备ID，FairyCat专属
+/* ==================== 设备信息 ==================== */
+#define DEVICE_ID       "PCT_100_FCs"   // 设备ID，FairyCat
 
-/* 项目信息 */
+/* ==================== 项目信息 ==================== */
 #define PROJECT_NAME    "PCT_100_CTL"   // 项目名称
 #define PROJECT_AUTHOR  "FairyCat"      // 项目作者
-#define PROJECT_DATE    "2026-05-27"    // 项目创建日期
+#define PROJECT_DATE    "2026-05-25"    // 项目创建日期
 
 /* ==================== 功能列表 ==================== */
-/* 基础功能 */
-#define FEATURE_KEY         1   // 按键检测功能（带消抖）
-#define FEATURE_LED         1   // LED控制功能（闪烁、翻转）
-#define FEATURE_RELAY       1   // 继电器控制功能（吸合/断开）
 
-/* 高级功能 */
-#define FEATURE_INTERRUPT   1   // 外部中断功能（上升沿/下降沿触发）
-#define FEATURE_NON_BLOCK   1   // 非阻塞延时功能（使用millis）
-#define FEATURE_SERIAL      1   // 串口通信功能
+/* 1. 按键检测功能 */
+/* 对应文件夹: class/anjian jiance/key/ */
+/* 功能说明: 检测GPIO21引脚的按键状态，带软件消抖功能 */
+#define FEATURE_KEY         1   // 按键检测功能（已实现）
 
-/* 版本更新记录 */
-/* V1.0    - 初始版本，基础LED和按键功能 */
-/* V1.5.280 - 新增功能：外部中断、非阻塞延时、继电器控制、增加了一些注释 */
+/* 2. LED闪烁功能 */
+/* 对应文件夹: class/led blingbling/led/ */
+/* 功能说明: 控制GPIO1引脚的LED，实现闪烁效果（亮200ms/灭200ms） */
+#define FEATURE_LED         1   // LED控制功能（已实现）
+
+/* 3. 继电器控制功能（阻塞方式） */
+/* 对应文件夹: class/jidianqi control/relay/ */
+/* 功能说明: 控制GPIO2引脚的继电器，使用delay()实现定时切换（1秒周期） */
+#define FEATURE_RELAY       1   // 继电器控制功能（已实现）
+
+/* 4. 继电器控制功能（非阻塞方式） */
+/* 对应文件夹: class/jidianqi millis/relay_noblock/ */
+/* 功能说明: 使用millis()实现非阻塞延时，继电器每2秒切换一次状态 */
+#define FEATURE_NON_BLOCK   1   // 非阻塞延时功能（已实现）
+
+/* 5. 外部中断功能 */
+/* 对应文件夹: class/wai bu zhong duan/interrupt_led/ */
+/* 功能说明: 通过GPIO21外部中断检测按键，上升沿触发，实现LED状态翻转 */
+/*           使用volatile关键字保护共享变量，避免在中断中使用阻塞函数 */
+#define FEATURE_INTERRUPT   1   // 外部中断功能（已实现）
+
+/* ==================== 版本更新记录 ==================== */
+/* V1.0    - 初始版本，基础框架搭建 */
+/* V1.5.270 - 新增功能：
+   - 按键检测模块（带消抖）
+   - LED闪烁模块
+   - 继电器控制模块（阻塞方式）
+   - 继电器控制模块（非阻塞方式，使用millis）
+*/
+/* V1.5.280 - 新增功能：
+   - 外部中断模块（使用attachInterrupt实现）
+   - GPIO21下拉输入，按键按下产生上升沿触发中断
+   - 中断服务函数中翻转LED状态，演示外部中断基本用法
+*/
 
 #endif
