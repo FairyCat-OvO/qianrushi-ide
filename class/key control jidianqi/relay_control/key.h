@@ -2,8 +2,12 @@
  * @file key.h
  * @brief 双按键控制模块头文件
  * @details 定义两个按键引脚：KEY1（总开关）和 KEY2（控制开关）
- *          KEY1: GPIO21（自锁按键，总开关）
- *          KEY2: GPIO19（普通按键，控制继电器）
+ * @author FairyCats
+ * @date 2023-12-20
+ * @version 1.0
+ * @note 引脚定义：
+ *          KEY1: GPIO20（自锁按键，总开关）
+ *          KEY2: GPIO21（普通按键，控制继电器）    
  */
 
 #ifndef __KEY_H
@@ -11,8 +15,8 @@
 
 #include "Arduino.h"
 
-#define KEY1_PIN   21   // KEY1引脚（总开关，自锁按键）
-#define KEY2_PIN   20   // KEY2引脚（控制开关，普通按键）
+#define KEY1_PIN   20   // KEY1引脚（总开关，自锁按键）
+#define KEY2_PIN   21   // KEY2引脚（控制开关，普通按键）
 
 #define KEY1       digitalRead(KEY1_PIN)  // 读取KEY1状态
 #define KEY2       digitalRead(KEY2_PIN)  // 读取KEY2状态

@@ -1,36 +1,50 @@
 /**
  * @file key.ino
- * @brief 按键检测主程序
- * @details 检测按键按下状态，带软件消抖功能
- *          按键按下时通过串口输出"key press!"
+ * @brief 按键检测主程序 - 自适应版本
+ * @details 自动检测按键电平逻辑，解决电平反相问题
  */
 
 #include "key.h"
 
-/**
- * @brief 初始化函数
- * @details 只执行一次，初始化按键模块和串口通信
- */
 void setup()
 {
-    key_init();         // 调用按键初始化函数
-    Serial.begin(9600); // 初始化串口，波特率9600
+    key_init();                          // 调用按键初始化函数
+    Serial.begin(115200);                // 初始化串口，波特率115200
+    
+    while (!Serial) {
+        delay(10);
+    }
+    
+    Serial.println("=== 按键检测程序启动 ===");
+    Serial.print("按键引脚: GPIO");
+    Serial.println(KEY_PIN);
+    Serial.println("连接方式: 浮空输入 (INPUT)");
+    Serial.println("正在校准按键...");
+    
+    // 调用校准函数
+    key_calibrate();
+    
+    Serial.println("-------------------------");
+    Serial.println("等待按键按下...");
 }
 
-/**
- * @brief 主循环函数
- * @details 无限循环执行，检测按键状态
- *          使用软件消抖：检测到按下后延时10ms再次确认
- */
 void loop()
 {
-    if (KEY == 0)           // 检测按键是否按下（低电平表示按下）
-    {
-        delay(10);          // 消抖延时：等待10ms让信号稳定
-        if (KEY == 0)       // 再次确认按键状态，防止误触发
-        {
-            Serial.println("key press!");  // 串口打印按键按下信息
-            while (KEY == 0); // 等待按键松开（阻塞等待，防止重复触发）
-        }
+    // 显示实时状态
+    static unsigned long last_time = 0;
+    if (millis() - last_time >= 100) {
+        last_time = millis();
+        int raw_value = digitalRead(KEY_PIN);
+        int key_state = key_read();
+        
+        Serial.print("原始值: ");
+        Serial.print(raw_value);
+        Serial.print(" | 按键状态: ");
+        Serial.println(key_state ? "按下" : "未按下");
+    }
+    
+    // 检测按键按下事件
+    if (key_is_pressed()) {
+        Serial.println("★ 检测到按键按下!");
     }
 }
