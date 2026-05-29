@@ -1,9 +1,6 @@
 /**
  * @file exti.cpp
  * @brief 外部中断模块实现文件
- * @details 实现外部中断初始化和中断服务函数
- *          - KEY1（自锁）控制系统总开关
- *          - KEY2（普通）控制继电器切换
  */
 
 #include "exti.h"
@@ -12,46 +9,55 @@
 uint8_t system_enable = 0;  // 系统使能标志：0=关闭，1=开启
 uint8_t relay_toggle = 0;   // 继电器切换标志：1=需要切换
 
-void key1_isr(void);  // 函数声明
-void key2_isr(void);  // 函数声明
+void key1_isr(void);
+void key2_isr(void);
 
-/**
- * @brief 外部中断初始化函数
- * @details 初始化按键模块，并配置两个外部中断
- *          KEY1：GPIO21，上升沿触发（自锁按键）
- *          KEY2：GPIO20，下降沿触发（普通按键）
- */
 void exti_init(void) {
-    key_init();  // 初始化按键模块
-
-    // 配置KEY1外部中断：上升沿触发
-    attachInterrupt(digitalPinToInterrupt(KEY1_PIN), key1_isr, RISING);
-
-    // 配置KEY2外部中断：下降沿触发
-    attachInterrupt(digitalPinToInterrupt(KEY2_PIN), key2_isr, FALLING);
+    key_init();
+    attachInterrupt(digitalPinToInterrupt(KEY1_PIN), key1_isr, CHANGE);
+    attachInterrupt(digitalPinToInterrupt(KEY2_PIN), key2_isr, CHANGE);
 }
 
 /**
  * @brief KEY1中断服务函数（总开关）
- * @details 自锁按键触发翻转系统使能状态
  */
-void key1_isr(void) {
-    delay(10);  // 消抖
-
-    if (KEY1 == 0) {  // 确认按键按下（低电平）
-        system_enable = !system_enable;  // 翻转系统使能状态
-        relay_toggle = 1;  // 设置切换标志，让主程序处理
+void IRAM_ATTR key1_isr(void) {
+    static unsigned long key1_last_time = 0;
+    
+    // 消抖：忽略50ms内的重复触发
+    if (millis() - key1_last_time < 50) {
+        return;
+    }
+    key1_last_time = millis();
+    
+    // 适配硬件：按下低电平切换使能
+    if (digitalRead(KEY1_PIN) == LOW) {
+        system_enable = !system_enable;
     }
 }
 
 /**
  * @brief KEY2中断服务函数（继电器控制）
- * @details 普通按键触发继电器切换请求
  */
-void key2_isr(void) {
-    delay(10);  // 消抖
-
-    if (KEY2 == 0) {  // 确认按键按下（低电平）
-        relay_toggle = 1;  // 设置切换标志，让主程序处理
+void IRAM_ATTR key2_isr(void) {
+    static uint8_t key2_pressed = 0;
+    static unsigned long key2_last_time = 0;
+    
+    // 消抖：忽略50ms内的重复触发
+    if (millis() - key2_last_time < 50) {
+        return;
+    }
+    key2_last_time = millis();
+    
+    // 修正电平判断：按下=LOW，松开=HIGH（匹配多数硬件）
+    if (digitalRead(KEY2_PIN) == LOW) {
+        // KEY2按下（低电平）
+        key2_pressed = 1;
+    } else {
+        // KEY2松开（高电平）→ 完成按下→松开才触发
+        if (key2_pressed == 1 && system_enable == 1) {
+            relay_toggle = 1;
+        }
+        key2_pressed = 0;
     }
 }

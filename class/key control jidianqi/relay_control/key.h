@@ -2,12 +2,8 @@
  * @file key.h
  * @brief 双按键控制模块头文件
  * @details 定义两个按键引脚：KEY1（总开关）和 KEY2（控制开关）
- * @author FairyCats
- * @date 2023-12-20
- * @version 1.0
- * @note 引脚定义：
  *          KEY1: GPIO20（自锁按键，总开关）
- *          KEY2: GPIO21（普通按键，控制继电器）    
+ *          KEY2: GPIO21（普通按键，控制继电器）
  */
 
 #ifndef __KEY_H
