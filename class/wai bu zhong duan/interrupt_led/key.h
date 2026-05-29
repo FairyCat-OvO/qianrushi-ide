@@ -11,7 +11,6 @@
 #include "Arduino.h"
 
 #define KEY_PIN   21   // 按键连接的GPIO引脚号（GPIO21）
-#define KEY       digitalRead(KEY_PIN)  // 宏定义：快捷读取按键状态
 
 void key_init(void);       // 按键初始化函数声明
 void key_calibrate(void);  // 按键校准函数声明
