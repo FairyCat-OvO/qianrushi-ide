@@ -10,7 +10,7 @@
 
 #include "Arduino.h"
 
-#define LED_PIN  1              // LED输出引脚，GPIO1
+#define LED_PIN  6              // LED输出引脚，GPIO6
 #define LED(x)   digitalWrite(LED_PIN, x)  // 宏定义：快捷设置LED状态
 #define LED_TOGGLE() digitalWrite(LED_PIN, !digitalRead(LED_PIN)) // 宏定义：翻转LED状态
 

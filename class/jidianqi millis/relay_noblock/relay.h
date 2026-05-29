@@ -2,7 +2,7 @@
  * @file relay.h
  * @brief 继电器控制模块头文件
  * @details 定义继电器控制引脚和状态宏，声明初始化和控制函数
- *          使用GPIO2作为继电器控制引脚
+ *          使用GPIO5作为继电器控制引脚
  */
 
 #ifndef __RELAY_H
@@ -10,7 +10,7 @@
 
 #include "Arduino.h"
 
-#define RELAY_PIN  2   // 继电器控制引脚（IN引脚），GPIO2
+#define RELAY_PIN  6   // 继电器控制引脚（IN引脚），GPIO6   
 #define RELAY_ON   HIGH  // 继电器吸合状态（高电平）
 #define RELAY_OFF  LOW   // 继电器断开状态（低电平）
 

@@ -1,7 +1,7 @@
 /**
  * @file led.cpp
  * @brief LED控制模块实现文件
- * @details 实现LED初始化功能，配置GPIO1为输出模式
+ * @details 实现LED初始化功能，配置GPIO6为输出模式      
  *          初始状态为熄灭（高电平）
  */
 
