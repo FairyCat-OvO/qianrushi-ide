@@ -1,0 +1,30 @@
+#include "exti.h"
+#include "relay.h"
+#include "light_sensor.h"
+#include "temp_sensor.h"
+
+void setup() {
+  Serial.begin(115200);
+  while (!Serial) { delay(10); }
+  
+  exti_init();
+  relay_init();
+  light_sensor_init();
+  temp_sensor_init();
+
+  Serial.println("===== 智能环境控制系统 =====");
+  Serial.println("KEY1(GPIO20): 自锁按键，系统使能");
+  Serial.println("KEY2(GPIO21): 长按2秒切换模式");
+  Serial.println("RELAY1(GPIO6): 照明灯");
+  Serial.println("RELAY2(GPIO7): 风扇");
+  Serial.println("光照传感器(GPIO1)");
+  Serial.println("温度传感器(GPIO10)");
+  Serial.println("-----------------------------");
+  Serial.print("模式:");
+  Serial.println(auto_mode ? "自动模式" : "手动模式");
+}
+
+void loop() {
+  exti_task();
+  relay_task();
+}
