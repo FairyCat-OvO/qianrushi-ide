@@ -1,16 +1,18 @@
-/**
- * @file exti.h
- * @brief 外部中断模块头文件
- */
-
 #ifndef __EXTI_H
 #define __EXTI_H
 
-#include "Arduino.h"
+#include <Arduino.h>
 
-extern uint8_t system_enable;     // 系统使能标志：0=关闭，1=开启
-extern uint8_t relay_toggle;      // 继电器切换标志：1=需要切换
+#define KEY1_PIN 20
+#define KEY2_PIN 21
+
+extern bool system_enable;
+extern bool key2_short;
+extern bool key2_long_2s;
+extern bool auto_mode;
+extern bool long_triggered;
 
 void exti_init(void);
+void exti_task(void);
 
 #endif

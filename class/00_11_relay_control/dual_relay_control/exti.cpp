@@ -1,65 +1,54 @@
-/**
- * @file exti.cpp
- * @brief 外部中断模块实现文件
- */
-
 #include "exti.h"
-#include "key.h"
 
-uint8_t system_enable = 0;  // 系统使能标志：0=关闭，1=开启
-uint8_t relay_toggle = 0;   // 继电器切换标志：1=需要切换
+bool system_enable = false;
+bool key2_short = false;
+bool key2_long_2s = false;
+bool auto_mode = true;   // 上电默认自动（空模式）
+bool long_triggered = false;
 
-void key1_isr(void);
-void key2_isr(void);
+static unsigned long key2_press_time = 0;
+static bool key2_last = false;
+
+#define KEY_DEBOUNCE_TIME 20
 
 void exti_init(void) {
-    key_init();
-    attachInterrupt(digitalPinToInterrupt(KEY1_PIN), key1_isr, CHANGE);
-    attachInterrupt(digitalPinToInterrupt(KEY2_PIN), key2_isr, CHANGE);
+  pinMode(KEY1_PIN, INPUT);
+  pinMode(KEY2_PIN, INPUT);
 }
 
-/**
- * @brief KEY1 中断服务函数（总开关）
- * @details 自锁按键，按下切换系统使能状态
- */
-void IRAM_ATTR key1_isr(void) {
-    static unsigned long key1_last_time = 0;
-    
-    // 消抖：忽略 50ms 内的重复触发
-    if (millis() - key1_last_time < 50) {
-        return;
-    }
-    key1_last_time = millis();
-    
-    // 适配硬件：按下低电平切换使能
-    if (digitalRead(KEY1_PIN) == LOW) {
-        system_enable = !system_enable;
-    }
-}
+void exti_task(void) {
+  bool key1 = digitalRead(KEY1_PIN);
+  bool key2 = digitalRead(KEY2_PIN);
 
-/**
- * @brief KEY2中断服务函数（继电器控制）
- * @details 短按切换继电器状态，支持四种状态轮流执行
- */
-void IRAM_ATTR key2_isr(void) {
-    static uint8_t key2_pressed = 0;
-    static unsigned long key2_last_time = 0;
-    
-    // 消抖：忽略50ms内的重复触发
-    if (millis() - key2_last_time < 50) {
-        return;
+  system_enable = (key1 == HIGH);
+
+  if (!system_enable) {
+    long_triggered = false;
+  }
+
+  key2_short = false;
+  key2_long_2s = false;
+
+  if (key2 != key2_last) {
+    delay(KEY_DEBOUNCE_TIME);
+    key2 = digitalRead(KEY2_PIN);
+  }
+
+  if (!key2_last && key2) {
+    key2_press_time = millis();
+    long_triggered = false;
+  }
+
+  if (key2_last && !key2) {
+    if (millis() - key2_press_time > 50 && millis() - key2_press_time < 1000) {
+      key2_short = true;
     }
-    key2_last_time = millis();
-    
-    // 修正电平判断：按下=LOW，松开=HIGH（匹配多数硬件）
-    if (digitalRead(KEY2_PIN) == LOW) {
-        // KEY2按下（低电平）
-        key2_pressed = 1;
-    } else {
-        // KEY2松开（高电平）→ 完成按下→松开才触发
-        if (key2_pressed == 1 && system_enable == 1) {
-            relay_toggle = 1;
-        }
-        key2_pressed = 0;
-    }
+  }
+
+  if (key2 && !long_triggered && (millis() - key2_press_time >= 2000)) {
+    key2_long_2s = true;
+    long_triggered = true;
+  }
+
+  key2_last = key2;
 }
