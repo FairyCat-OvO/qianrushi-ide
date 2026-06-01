@@ -2,6 +2,7 @@
 #include "exti.h"
 #include "light_sensor.h"
 #include "temp_sensor.h"
+#include "display.h"
 
 int state = 0;
 
@@ -18,6 +19,7 @@ void relay_task(void) {
     digitalWrite(RELAY1_PIN, LOW);
     digitalWrite(RELAY2_PIN, LOW);
     state = 0;
+    display_update_info(auto_mode, false, 0, 1000, 0, 40.0, false, false);
     return;
   }
 
@@ -45,19 +47,27 @@ void relay_task(void) {
 
 void relay_auto_run(void) {
   LightLevel light_level = light_sensor_get_level();
+  uint16_t light_raw = light_sensor_read_raw();
   float temp_c = temp_sensor_read_celsius();
   TempLevel temp_level = temp_sensor_get_level(temp_c);
   
+  bool led_on = false;
+  bool fan_on = false;
+  
   if (light_level == LIGHT_DARK || light_level == LIGHT_DIM) {
     digitalWrite(RELAY1_PIN, HIGH);
+    led_on = true;
   } else {
     digitalWrite(RELAY1_PIN, LOW);
+    led_on = false;
   }
   
   if (temp_level == TEMP_HIGH || temp_level == TEMP_VERY_HIGH) {
     digitalWrite(RELAY2_PIN, HIGH);
+    fan_on = true;
   } else {
     digitalWrite(RELAY2_PIN, LOW);
+    fan_on = false;
   }
   
   static unsigned long last_print = 0;
@@ -66,11 +76,13 @@ void relay_auto_run(void) {
     Serial.print("自动 | 光照:");
     Serial.print(light_sensor_get_level_string(light_level));
     Serial.print(" | 照明:");
-    Serial.print(digitalRead(RELAY1_PIN) == HIGH ? "开" : "关");
+    Serial.print(led_on ? "开" : "关");
     Serial.print(" | 温度:");
     Serial.print(temp_c, 1);
     Serial.print("°C | 风扇:");
-    Serial.println(digitalRead(RELAY2_PIN) == HIGH ? "开" : "关");
+    Serial.println(fan_on ? "开" : "关");
+    
+    display_update_info(true, true, light_raw, 4095, temp_c, 40.0, led_on, fan_on);
   }
 }
 
@@ -82,23 +94,42 @@ void relay_manual_run(void) {
     Serial.println(state);
   }
 
+  bool led_on = false;
+  bool fan_on = false;
+  
   switch(state) {
     case 0:
       digitalWrite(RELAY1_PIN, LOW);
       digitalWrite(RELAY2_PIN, LOW);
+      led_on = false;
+      fan_on = false;
       break;
     case 1:
       digitalWrite(RELAY1_PIN, LOW);
       digitalWrite(RELAY2_PIN, HIGH);
+      led_on = false;
+      fan_on = true;
       break;
     case 2:
       digitalWrite(RELAY1_PIN, HIGH);
       digitalWrite(RELAY2_PIN, LOW);
+      led_on = true;
+      fan_on = false;
       break;
     case 3:
       digitalWrite(RELAY1_PIN, HIGH);
       digitalWrite(RELAY2_PIN, HIGH);
+      led_on = true;
+      fan_on = true;
       break;
+  }
+  
+  static unsigned long last_print = 0;
+  if (millis() - last_print >= 1000) {
+    last_print = millis();
+    uint16_t light_raw = light_sensor_read_raw();
+    float temp_c = temp_sensor_read_celsius();
+    display_update_info(false, true, light_raw, 4095, temp_c, 40.0, led_on, fan_on);
   }
 }
 
