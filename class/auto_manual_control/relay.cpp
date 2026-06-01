@@ -71,7 +71,7 @@ void relay_auto_run(void) {
   }
   
   static unsigned long last_print = 0;
-  if (millis() - last_print >= 1000) {
+  if (millis() - last_print >= 200) {
     last_print = millis();
     Serial.print("自动 | 光照:");
     Serial.print(light_sensor_get_level_string(light_level));
@@ -125,7 +125,7 @@ void relay_manual_run(void) {
   }
   
   static unsigned long last_print = 0;
-  if (millis() - last_print >= 1000) {
+  if (millis() - last_print >= 200) {
     last_print = millis();
     uint16_t light_raw = light_sensor_read_raw();
     float temp_c = temp_sensor_read_celsius();

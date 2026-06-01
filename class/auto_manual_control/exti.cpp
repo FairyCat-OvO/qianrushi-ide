@@ -10,7 +10,7 @@ bool long_triggered = false;
 static unsigned long key2_press_time = 0;
 static bool key2_last = false;
 
-#define KEY_DEBOUNCE_TIME 20
+#define KEY_DEBOUNCE_TIME 10
 
 void exti_init(void) {
   key_init();
@@ -40,7 +40,7 @@ void exti_task(void) {
   }
 
   if (key2_last && !key2) {
-    if (millis() - key2_press_time > 50 && millis() - key2_press_time < 1000) {
+    if (millis() - key2_press_time > 20 && millis() - key2_press_time < 1000) {
       key2_short = true;
     }
   }
