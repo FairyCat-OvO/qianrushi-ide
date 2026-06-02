@@ -35,16 +35,18 @@ void display_update_info(bool mode_auto, bool main_on, uint16_t light_val, uint1
     u8g2.print(main_on?"ON":"OFF");
 
     u8g2.setCursor(2,28);
-    u8g2.print("光照:");
+    u8g2.print("光强:");
     u8g2.print(light_val);
     u8g2.print("/");
     u8g2.print(light_max);
+    u8g2.print("lux");
 
     u8g2.setCursor(2,42);
     u8g2.print("温度:");
     u8g2.print(temp_val,1);
     u8g2.print("/");
     u8g2.print(temp_max,1);
+    u8g2.print("°C");
 
     u8g2.setCursor(2,56);
     u8g2.print("灯光:");
