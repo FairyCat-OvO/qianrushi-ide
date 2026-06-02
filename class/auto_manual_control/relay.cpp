@@ -3,6 +3,7 @@
 #include "light_sensor.h"
 #include "temp_sensor.h"
 #include "display.h"
+#include "wifi_connect.h"
 
 int state = 0;
 
@@ -19,7 +20,7 @@ void relay_task(void) {
     digitalWrite(RELAY1_PIN, LOW);
     digitalWrite(RELAY2_PIN, LOW);
     state = 0;
-    display_update_info(auto_mode, false, 0, 119, 0, 28.0, false, false);
+    display_update_info(auto_mode, false, 0, 119, 0, 28.0, false, false, wifi_is_connected());
     return;
   }
 
@@ -83,7 +84,7 @@ void relay_auto_run(void) {
     Serial.print("C | 风扇:");
     Serial.println(fan_on ? "开" : "关");
     
-    display_update_info(true, true, light_lux, 119, temp_c, 28.0, led_on, fan_on);
+    display_update_info(true, true, light_lux, 119, temp_c, 28.0, led_on, fan_on, wifi_is_connected());
   }
 }
 
@@ -131,7 +132,7 @@ void relay_manual_run(void) {
     uint16_t light_raw = light_sensor_read_raw();
     uint16_t light_lux = (4095 - light_raw) * (4095 - light_raw) / 30000;
     float temp_c = temp_sensor_read_celsius();
-    display_update_info(false, true, light_lux, 119, temp_c, 28.0, led_on, fan_on);
+    display_update_info(false, true, light_lux, 119, temp_c, 28.0, led_on, fan_on, wifi_is_connected());
   }
 }
 

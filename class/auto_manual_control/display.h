@@ -8,6 +8,6 @@
 
 void display_init(void);
 void display_update_info(bool mode_auto, bool main_on, uint16_t light_val, uint16_t light_max, 
-                         float temp_val, float temp_max, bool led_on, bool fan_on);
+                         float temp_val, float temp_max, bool led_on, bool fan_on, bool wifi_connected);
 
 #endif

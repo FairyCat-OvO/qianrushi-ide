@@ -18,41 +18,45 @@ void display_init(void) {
   
   u8g2.firstPage();
   do{
-    u8g2.setCursor(2,14);
+    u8g2.setCursor(2,12);
     u8g2.print("系统启动中...");
   }while(u8g2.nextPage());
 }
 
 void display_update_info(bool mode_auto, bool main_on, uint16_t light_val, uint16_t light_max, 
-                         float temp_val, float temp_max, bool led_on, bool fan_on) {
+                         float temp_val, float temp_max, bool led_on, bool fan_on, bool wifi_connected) {
   u8g2.firstPage();
   do{
-    u8g2.setCursor(2,14);
+    u8g2.setCursor(2,12);
     if(mode_auto)
-      u8g2.print("模式:自动  总闸:");
+      u8g2.print("模式:自动 总闸:");
     else
-      u8g2.print("模式:手动  总闸:");
+      u8g2.print("模式:手动 总闸:");
     u8g2.print(main_on?"ON":"OFF");
 
-    u8g2.setCursor(2,28);
+    u8g2.setCursor(2,24);
     u8g2.print("光强:");
     u8g2.print(light_val);
     u8g2.print("/");
     u8g2.print(light_max);
     u8g2.print("lux");
 
-    u8g2.setCursor(2,42);
+    u8g2.setCursor(2,36);
     u8g2.print("温度:");
     u8g2.print(temp_val,1);
     u8g2.print("/");
     u8g2.print(temp_max,1);
     u8g2.print("C");
 
-    u8g2.setCursor(2,56);
+    u8g2.setCursor(2,48);
     u8g2.print("灯光:");
     u8g2.print(led_on?"ON":"OFF");
     u8g2.print(" 风扇:");
     u8g2.print(fan_on?"ON":"OFF");
+
+    u8g2.setCursor(2,60);
+    u8g2.print("WiFi:");
+    u8g2.print(wifi_connected?"已连接":"未连接");
 
   }while(u8g2.nextPage());
 }
