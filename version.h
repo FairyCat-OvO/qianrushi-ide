@@ -2,8 +2,8 @@
 #define __VERSION_H
 
 /* ==================== 版本信息 ==================== */
-#define VERSION         "V2.6.11"     // 当前版本号
-#define VERSION_DATE    "2026-06-01"    // 版本发布日期
+#define VERSION         "V2.6.20"     // 当前版本号
+#define VERSION_DATE    "2026-06-02"    // 版本发布日期
 
 /* ==================== 设备信息 ==================== */
 #define DEVICE_ID       "PCT_100_FCs"   // 设备ID，FairyCat
@@ -83,6 +83,16 @@
 /*           每秒更新一次显示内容，实时反映环境状态 */
 #define FEATURE_DISPLAY      1   // OLED显示屏功能（已实现）
 
+/* 12. WiFi联网功能 */
+/* 对应文件夹: class/wifi_connect/ */
+/* 功能说明: 使用ESP32 WiFi模块实现网络连接功能 */
+/*           上电自动扫描附近WiFi网络，通过串口选择要连接的网络并输入密码 */
+/*           连接成功后显示IP地址、网关、子网掩码、DNS、信号强度等信息 */
+/*           使用Preferences库将SSID和密码保存到Flash中，下次上电自动连接 */
+/*           支持断网自动重连功能（5秒间隔），按'c'键清除保存的配置重新配置 */
+/*           模块化设计，包含wifi_connect.h、wifi_connect.cpp、wifi_connect.ino */
+#define FEATURE_WIFI         1   // WiFi联网功能（已实现）
+
 /* ==================== 版本更新记录 ==================== */
 /* V1.0     - 初始版本，基础框架搭建 */
 /* V1.5.270  - 新增功能：
@@ -124,6 +134,17 @@
    - 显示屏实时显示系统状态：模式(auto/manu)、系统开关(ON/OFF)、光照值、温度值、LED状态、风扇状态
    - 将OLED显示屏集成到智能环境控制系统（auto_manual_control）中
    - 每秒更新一次显示内容，实时反映环境状态
+*/
+/* V2.6.20 - 新增功能：
+   - WiFi联网模块（class/wifi_connect）：使用ESP32 WiFi模块实现网络连接
+   - 上电自动扫描附近WiFi网络，通过串口选择要连接的网络并输入密码
+   - 连接成功后显示IP地址、网关、子网掩码、DNS、信号强度等信息
+   - 使用Preferences库将SSID和密码保存到Flash中，下次上电自动连接
+   - 支持断网自动重连功能（5秒间隔），按'c'键清除保存的配置重新配置
+   - 模块化设计，包含wifi_connect.h、wifi_connect.cpp、wifi_connect.ino三个文件
+   - 支持WiFi状态管理（断开/连接中/已连接/重连中/扫描中/配置中）
+   - 支持网络扫描功能，显示SSID、信号强度、频道、加密类型
+   - 完善的错误处理机制，连接失败时显示详细错误信息
 */
 
 #endif
