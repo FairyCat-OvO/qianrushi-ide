@@ -3,6 +3,7 @@
 #include "light_sensor.h"
 #include "temp_sensor.h"
 #include "display.h"
+#include "wifi_connect.h"
 
 void setup() {
   Serial.begin(115200);
@@ -13,6 +14,7 @@ void setup() {
   light_sensor_init();
   temp_sensor_init();
   display_init();
+  wifi_init();
 
   Serial.println("===== 智能环境控制系统 =====");
   Serial.println("KEY1(GPIO20): 自锁按键，系统使能");
@@ -22,6 +24,7 @@ void setup() {
   Serial.println("光照传感器(GPIO1)");
   Serial.println("温度传感器(GPIO10)");
   Serial.println("OLED SDA(GPIO4), SCL(GPIO5)");
+  Serial.println("WiFi: ESP32内置模块");
   Serial.println("-----------------------------");
   Serial.print("模式:");
   Serial.println(auto_mode ? "自动模式" : "手动模式");
@@ -30,4 +33,5 @@ void setup() {
 void loop() {
   exti_task();
   relay_task();
+  wifi_task();
 }

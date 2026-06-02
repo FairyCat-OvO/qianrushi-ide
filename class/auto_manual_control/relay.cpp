@@ -71,7 +71,7 @@ void relay_auto_run(void) {
   }
   
   static unsigned long last_print = 0;
-  if (millis() - last_print >= 200) {
+  if (millis() - last_print >= 2000) {
     last_print = millis();
     uint16_t light_lux = (4095 - light_raw) * (4095 - light_raw) / 30000;
     Serial.print("自动 | 光照:");
@@ -80,7 +80,7 @@ void relay_auto_run(void) {
     Serial.print(led_on ? "开" : "关");
     Serial.print(" | 温度:");
     Serial.print(temp_c, 1);
-    Serial.print("°C | 风扇:");
+    Serial.print("C | 风扇:");
     Serial.println(fan_on ? "开" : "关");
     
     display_update_info(true, true, light_lux, 119, temp_c, 28.0, led_on, fan_on);
@@ -126,7 +126,7 @@ void relay_manual_run(void) {
   }
   
   static unsigned long last_print = 0;
-  if (millis() - last_print >= 1666) {
+  if (millis() - last_print >= 2000) {
     last_print = millis();
     uint16_t light_raw = light_sensor_read_raw();
     uint16_t light_lux = (4095 - light_raw) * (4095 - light_raw) / 30000;

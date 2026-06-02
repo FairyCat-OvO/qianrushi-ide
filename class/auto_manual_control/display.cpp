@@ -46,7 +46,7 @@ void display_update_info(bool mode_auto, bool main_on, uint16_t light_val, uint1
     u8g2.print(temp_val,1);
     u8g2.print("/");
     u8g2.print(temp_max,1);
-    u8g2.print("°C");
+    u8g2.print("C");
 
     u8g2.setCursor(2,56);
     u8g2.print("灯光:");
