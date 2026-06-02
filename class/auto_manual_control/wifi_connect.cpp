@@ -7,6 +7,7 @@ static Preferences preferences;
 static String current_ssid = "";
 static String current_password = "";
 static int reconnect_fail_count = 0;
+static bool wifi_enabled = true;
 #define MAX_RECONNECT_FAILS 3
 
 void wifi_init(void) {
@@ -52,6 +53,16 @@ void wifi_init(void) {
 }
 
 void wifi_task(void) {
+  if (!wifi_enabled) {
+    if (WiFi.status() == WL_CONNECTED) {
+      WiFi.disconnect();
+      wifi_connected = false;
+      wifi_status = WIFI_STATUS_DISCONNECTED;
+      Serial.println("WiFi disconnected by user command");
+    }
+    return;
+  }
+
   if (WiFi.status() != WL_CONNECTED) {
     if (wifi_connected) {
       wifi_connected = false;
@@ -102,6 +113,24 @@ void wifi_task(void) {
   }
 }
 
+void wifi_check_serial_command(void) {
+  if (Serial.available()) {
+    String input = Serial.readStringUntil('\n');
+    input.trim();
+    
+    if (input.equalsIgnoreCase("disconnect")) {
+      Serial.println("WiFi disconnect command received");
+      wifi_enabled = false;
+      Serial.println("WiFi disabled. Use 'connect' to re-enable.");
+    } else if (input.equalsIgnoreCase("connect")) {
+      Serial.println("WiFi connect command received");
+      wifi_enabled = true;
+      Serial.println("WiFi enabled. Will attempt to reconnect...");
+      last_reconnect_time = 0;
+    }
+  }
+}
+
 bool wifi_is_connected(void) {
   return wifi_connected;
 }
@@ -146,6 +175,11 @@ int32_t wifi_get_rssi(void) {
 }
 
 int32_t wifi_scan_networks(void) {
+  if (!wifi_enabled) {
+    Serial.println("WiFi is disabled. Use 'connect' to enable.");
+    return 0;
+  }
+  
   Serial.println("\nScanning WiFi networks...");
   WiFi.disconnect();
   delay(100);
@@ -178,9 +212,20 @@ int32_t wifi_scan_networks(void) {
 }
 
 void wifi_serial_config(void) {
+  if (!wifi_enabled) {
+    Serial.println("WiFi is disabled. Use 'connect' command to enable.");
+    return;
+  }
+  
   wifi_status = WIFI_STATUS_CONFIGURING;
   
   while (true) {
+    if (!wifi_enabled) {
+      Serial.println("WiFi disabled during configuration");
+      wifi_status = WIFI_STATUS_DISCONNECTED;
+      return;
+    }
+    
     int32_t network_count = wifi_scan_networks();
     
     if (network_count == 0) {
@@ -195,6 +240,11 @@ void wifi_serial_config(void) {
           if (input.equalsIgnoreCase("esc")) {
             Serial.println("Skipping WiFi configuration...");
             Serial.println("Continuing system without WiFi...");
+            wifi_status = WIFI_STATUS_DISCONNECTED;
+            return;
+          } else if (input.equalsIgnoreCase("disconnect")) {
+            Serial.println("WiFi disabled by user");
+            wifi_enabled = false;
             wifi_status = WIFI_STATUS_DISCONNECTED;
             return;
           }
@@ -217,6 +267,13 @@ void wifi_serial_config(void) {
     if (input.equalsIgnoreCase("esc")) {
       Serial.println("Skipping WiFi configuration...");
       Serial.println("Continuing system without WiFi...");
+      wifi_status = WIFI_STATUS_DISCONNECTED;
+      return;
+    }
+    
+    if (input.equalsIgnoreCase("disconnect")) {
+      Serial.println("WiFi disabled by user");
+      wifi_enabled = false;
       wifi_status = WIFI_STATUS_DISCONNECTED;
       return;
     }

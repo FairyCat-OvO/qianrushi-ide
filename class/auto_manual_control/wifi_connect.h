@@ -20,6 +20,7 @@ typedef enum {
 
 void wifi_init(void);
 void wifi_task(void);
+void wifi_check_serial_command(void);
 bool wifi_is_connected(void);
 WiFiStatus wifi_get_status(void);
 String wifi_get_ip(void);
