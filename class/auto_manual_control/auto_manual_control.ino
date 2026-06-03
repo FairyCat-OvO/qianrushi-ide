@@ -5,6 +5,7 @@
 #include "display.h"
 #include "wifi_connect.h"
 #include "ws2812_rgb.h"
+#include "mqtt_connect.h"
 
 void setup() {
   Serial.begin(115200);
@@ -27,10 +28,15 @@ void setup() {
   Serial.println("OLED SDA(GPIO4), SCL(GPIO5)");
   Serial.println("WS2812 RGB(GPIO0)");
   Serial.println("WiFi: ESP32内置模块");
+  Serial.println("MQTT: ESP32内置模块");
   Serial.println("-----------------------------");
   Serial.println("串口命令:");
   Serial.println("  disconnect - 断开WiFi并禁用扫描");
   Serial.println("  connect    - 重新启用WiFi连接");
+  Serial.println("  mqtt_config - 配置MQTT参数");
+  Serial.println("  mqtt_clear - 清除MQTT配置");
+  Serial.println("  mqtt_status - 查看MQTT状态");
+  Serial.println("  mqtt_report - 手动上报状态");
   Serial.println("-----------------------------");
   Serial.print("模式:");
   Serial.println(auto_mode ? "自动模式" : "手动模式");
@@ -39,6 +45,8 @@ void setup() {
   
   wifi_init();
   
+  mqtt_init();
+  
   ws2812_set_wifi_status(wifi_is_connected());
 }
 
@@ -46,7 +54,40 @@ void loop() {
   exti_task();
   relay_task();
   wifi_task();
-  wifi_check_serial_command();
+  mqtt_task();
+  
+  // 统一处理串口命令，避免多个函数竞争读取串口
+  if (Serial.available()) {
+    String input = Serial.readStringUntil('\n');
+    input.trim();
+    
+    // WiFi 命令
+    if (input.equalsIgnoreCase("disconnect")) {
+      Serial.println("WiFi disconnect command received");
+      wifi_set_enabled(false);
+      Serial.println("WiFi disabled. Use 'connect' to re-enable.");
+    } else if (input.equalsIgnoreCase("connect")) {
+      Serial.println("WiFi connect command received");
+      wifi_set_enabled(true);
+      wifi_reconnect_now();
+      Serial.println("WiFi enabled. Will attempt to reconnect...");
+    }
+    // MQTT 命令
+    else if (input.equalsIgnoreCase("mqtt_config")) {
+      Serial.println("MQTT config command received");
+      mqtt_serial_config();
+    } else if (input.equalsIgnoreCase("mqtt_clear")) {
+      Serial.println("MQTT clear config command received");
+      mqtt_clear_config();
+    } else if (input.equalsIgnoreCase("mqtt_status")) {
+      Serial.println("MQTT status command received");
+      mqtt_print_config();
+      Serial.printf("MQTT connected: %s\n", mqtt_is_connected() ? "true" : "false");
+    } else if (input.equalsIgnoreCase("mqtt_report")) {
+      Serial.println("MQTT report command received");
+      mqtt_report_status();
+    }
+  }
   
   static unsigned long last_led_update = 0;
   if (millis() - last_led_update >= 100) {

@@ -2,14 +2,14 @@
 #define __VERSION_H
 
 /* ==================== 版本信息 ==================== */
-#define VERSION         "V2.6.21"     // 当前版本号
-#define VERSION_DATE    "2026-06-02"    // 版本发布日期
+#define VERSION         "V2.6.31"     // 当前版本号
+#define VERSION_DATE    "2026-06-03"    // 版本发布日期
 
 /* ==================== 设备信息 ==================== */
-#define DEVICE_ID       "PCT_100_FCs"   // 设备ID，FairyCat
+#define DEVICE_ID       "PCT_100_006"   // 设备ID，FairyCat
 
 /* ==================== 项目信息 ==================== */
-#define PROJECT_NAME    "PCT_100_CTL"   // 项目名称
+#define PROJECT_NAME    "PCT_100_CTL_006"   // 项目名称
 #define PROJECT_AUTHOR  "FairyCat"      // 项目作者
 #define PROJECT_DATE    "2026-05-25"    // 项目创建日期
 
@@ -102,6 +102,24 @@
 /*           集成到智能环境控制系统中，作为状态指示 */
 #define FEATURE_WS2812       1   // WS2812万色灯功能（已实现）
 
+/* 14. MQTT通信功能 */
+/* 对应文件夹: class/auto_manual_control/mqtt_connect.h/cpp */
+/* 功能说明: 使用PubSubClient库实现MQTT通信，连接到47.98.170.180:8081 */
+/*           设备状态上报主题: chemctrl/{device_id}/status */
+/*           远程控制命令主题: chemctrl/{device_id}/command */
+/*           支持的远程控制命令: */
+/*             - set_relay: 控制继电器3或4的开关状态 */
+/*             - set_mode: 切换自动/手动模式 */
+/*             - get_status: 查询设备状态，立即上报 */
+/*             - set_threshold: 设置温度和光照阈值 */
+/*             - reboot: 远程重启设备 */
+/*           支持串口配置MQTT参数: mqtt_config、mqtt_clear、mqtt_status、mqtt_report */
+/*           使用Preferences库将MQTT配置保存到Flash中 */
+/*           支持断网自动重连功能，每5秒尝试重连一次 */
+/*           设备状态每10秒自动上报一次 */
+/*           模块化设计，包含mqtt_connect.h、mqtt_connect.cpp */
+#define FEATURE_MQTT         1   // MQTT通信功能（已实现）
+
 /* ==================== 版本更新记录 ==================== */
 /* V1.0     - 初始版本，基础框架搭建 */
 /* V1.5.270  - 新增功能：
@@ -165,5 +183,27 @@
    - connect命令重新启用WiFi连接，恢复搜索和重连功能
    - 将万色灯功能集成到智能环境控制系统中，实时指示系统状态
 */
-
+/* V2.6.31 - 新增功能：
+   - MQTT通信模块（mqtt_connect.h/cpp）：使用PubSubClient库实现MQTT通信
+   - 默认连接到47.98.170.180:8081，用户名dzdx_emqx，密码Jp4!sQ7$
+   - 设备状态上报主题: chemctrl/{device_id}/status，每10秒自动上报一次
+   - 远程控制命令主题: chemctrl/{device_id}/command，实时接收控制指令
+   - 支持的远程控制命令:
+     - set_relay: 控制继电器3(照明)或4(风扇)的开关状态
+     - set_mode: 切换自动/手动模式
+     - get_status: 查询设备状态，立即上报一次
+     - set_threshold: 设置温度和光照阈值
+     - reboot: 远程重启设备
+   - 支持串口配置MQTT参数:
+     - mqtt_config: 配置MQTT服务器、端口、用户名、密码、设备ID
+     - mqtt_clear: 清除MQTT配置，恢复默认值
+     - mqtt_status: 查看MQTT配置和连接状态
+     - mqtt_report: 手动触发状态上报
+   - 使用Preferences库将MQTT配置保存到Flash中，断电不丢失
+   - 支持断网自动重连功能，每5秒尝试重连一次
+   - 新增relay模块接口: relay_get_relay1/2_status、relay_set_relay1/2、
+     relay_set_mode、relay_set_temp_threshold、relay_set_light_threshold
+   - 新增阈值变量: temp_threshold、light_threshold，支持远程设置
+   - 模块化设计，各功能独立封装，便于维护和扩展
+*/
 #endif

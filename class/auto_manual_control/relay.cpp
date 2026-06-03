@@ -6,6 +6,8 @@
 #include "wifi_connect.h"
 
 int state = 0;
+float temp_threshold = TEMP_THRESHOLD_DEFAULT;
+uint16_t light_threshold = LIGHT_THRESHOLD_DEFAULT;
 
 void relay_init(void) {
   pinMode(RELAY1_PIN, OUTPUT);
@@ -139,4 +141,97 @@ void relay_manual_run(void) {
 void relay_all_off(void) {
   digitalWrite(RELAY1_PIN, LOW);
   digitalWrite(RELAY2_PIN, LOW);
+}
+
+bool relay_get_relay1_status(void) {
+  return digitalRead(RELAY1_PIN) == RELAY_ON;
+}
+
+bool relay_get_relay2_status(void) {
+  return digitalRead(RELAY2_PIN) == RELAY_ON;
+}
+
+bool relay_set_relay1(bool on) {
+  if (!system_enable) {
+    Serial.println("System disabled, cannot set relay1");
+    return false;
+  }
+  
+  digitalWrite(RELAY1_PIN, on ? RELAY_ON : RELAY_OFF);
+  Serial.printf("Relay1 set to: %s\n", on ? "ON" : "OFF");
+  
+  // 同步更新 state 变量，避免被 relay_manual_run() 覆盖
+  if (auto_mode) {
+    // 自动模式下，继电器由传感器控制，不需要更新 state
+    return true;
+  }
+  
+  bool relay2_status = digitalRead(RELAY2_PIN) == RELAY_ON;
+  
+  if (on && relay2_status) {
+    state = 3;  // 11 - 两个都开
+  } else if (on && !relay2_status) {
+    state = 2;  // 10 - 只有继电器1开
+  } else if (!on && relay2_status) {
+    state = 1;  // 01 - 只有继电器2开
+  } else {
+    state = 0;  // 00 - 两个都关
+  }
+  
+  return true;
+}
+
+bool relay_set_relay2(bool on) {
+  if (!system_enable) {
+    Serial.println("System disabled, cannot set relay2");
+    return false;
+  }
+  
+  digitalWrite(RELAY2_PIN, on ? RELAY_ON : RELAY_OFF);
+  Serial.printf("Relay2 set to: %s\n", on ? "ON" : "OFF");
+  
+  // 同步更新 state 变量，避免被 relay_manual_run() 覆盖
+  if (auto_mode) {
+    // 自动模式下，继电器由传感器控制，不需要更新 state
+    return true;
+  }
+  
+  bool relay1_status = digitalRead(RELAY1_PIN) == RELAY_ON;
+  
+  if (relay1_status && on) {
+    state = 3;  // 11 - 两个都开
+  } else if (relay1_status && !on) {
+    state = 2;  // 10 - 只有继电器1开
+  } else if (!relay1_status && on) {
+    state = 1;  // 01 - 只有继电器2开
+  } else {
+    state = 0;  // 00 - 两个都关
+  }
+  
+  return true;
+}
+
+bool relay_set_mode(bool auto_mode_set) {
+  if (auto_mode != auto_mode_set) {
+    auto_mode = auto_mode_set;
+    if (auto_mode) {
+      state = 0;
+      digitalWrite(RELAY1_PIN, LOW);
+      digitalWrite(RELAY2_PIN, LOW);
+      Serial.println("→ 自动模式：温度联动风扇，光照联动照明");
+    } else {
+      Serial.println("→ 手动模式：可以按键控制");
+    }
+  }
+  return true;
+}
+
+void relay_set_temp_threshold(float temp) {
+  temp_threshold = temp;
+  Serial.printf("Temperature threshold set to: %.1f C\n", temp_threshold);
+}
+
+void relay_set_light_threshold(uint16_t light) {
+  light_threshold = light;
+  Serial.printf("Light threshold set to: %d lux\n", light_threshold);
 }

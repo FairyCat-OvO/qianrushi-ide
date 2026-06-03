@@ -28,6 +28,8 @@ String wifi_get_gateway(void);
 String wifi_get_subnet(void);
 String wifi_get_ssid(void);
 int32_t wifi_get_rssi(void);
+void wifi_reconnect_now(void);
+void wifi_set_enabled(bool enabled);
 int32_t wifi_scan_networks(void);
 void wifi_serial_config(void);
 void wifi_save_config(const char* ssid, const char* password);

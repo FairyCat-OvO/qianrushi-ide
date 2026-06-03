@@ -135,6 +135,15 @@ bool wifi_is_connected(void) {
   return wifi_connected;
 }
 
+void wifi_reconnect_now(void) {
+  last_reconnect_time = 0;
+  Serial.println("WiFi reconnect requested");
+}
+
+void wifi_set_enabled(bool enabled) {
+  wifi_enabled = enabled;
+}
+
 WiFiStatus wifi_get_status(void) {
   return wifi_status;
 }
