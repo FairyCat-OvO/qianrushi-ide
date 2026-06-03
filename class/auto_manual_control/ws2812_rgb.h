@@ -17,6 +17,6 @@ void ws2812_set_color_struct(RGBColor color);
 void ws2812_clear(void);
 void ws2812_show(void);
 void ws2812_boot_sequence(void);
-void ws2812_set_wifi_status(bool connected);
+void ws2812_task(bool wifi_connected, bool mqtt_connected, bool led_on, bool fan_on);
 
 #endif

@@ -46,8 +46,6 @@ void setup() {
   wifi_init();
   
   mqtt_init();
-  
-  ws2812_set_wifi_status(wifi_is_connected());
 }
 
 void loop() {
@@ -117,9 +115,5 @@ void loop() {
     }
   }
   
-  static unsigned long last_led_update = 0;
-  if (millis() - last_led_update >= 100) {
-    last_led_update = millis();
-    ws2812_set_wifi_status(wifi_is_connected());
-  }
+  ws2812_task(wifi_is_connected(), mqtt_is_connected(), relay_get_relay1_status(), relay_get_relay2_status());
 }
