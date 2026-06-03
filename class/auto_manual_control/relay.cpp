@@ -4,6 +4,11 @@
 #include "temp_sensor.h"
 #include "display.h"
 #include "wifi_connect.h"
+#include <Preferences.h>
+
+#define THRESHOLD_NAMESPACE "relay_thr"
+
+static Preferences preferences;
 
 int state = 0;
 float temp_threshold = TEMP_THRESHOLD_DEFAULT;
@@ -15,6 +20,15 @@ void relay_init(void) {
   
   digitalWrite(RELAY1_PIN, LOW);
   digitalWrite(RELAY2_PIN, LOW);
+  
+  // 从 Flash 加载保存的阈值
+  preferences.begin(THRESHOLD_NAMESPACE, true);
+  if (preferences.isKey("temp") && preferences.isKey("light")) {
+    temp_threshold = preferences.getFloat("temp", TEMP_THRESHOLD_DEFAULT);
+    light_threshold = preferences.getUShort("light", LIGHT_THRESHOLD_DEFAULT);
+    Serial.printf("Loaded thresholds from flash - Temp: %.1f, Light: %d\n", temp_threshold, light_threshold);
+  }
+  preferences.end();
 }
 
 void relay_task(void) {
@@ -49,15 +63,15 @@ void relay_task(void) {
 }
 
 void relay_auto_run(void) {
-  LightLevel light_level = light_sensor_get_level();
   uint16_t light_raw = light_sensor_read_raw();
   float temp_c = temp_sensor_read_celsius();
-  TempLevel temp_level = temp_sensor_get_level(temp_c);
   
   bool led_on = false;
   bool fan_on = false;
   
-  if (light_level == LIGHT_DARK || light_level == LIGHT_DIM) {
+  // 使用用户设置的阈值判断光照
+  uint16_t light_lux = (4095 - light_raw) * (4095 - light_raw) / 30000;
+  if (light_lux < light_threshold) {
     digitalWrite(RELAY1_PIN, HIGH);
     led_on = true;
   } else {
@@ -65,7 +79,8 @@ void relay_auto_run(void) {
     led_on = false;
   }
   
-  if (temp_level == TEMP_HIGH || temp_level == TEMP_VERY_HIGH) {
+  // 使用用户设置的阈值判断温度
+  if (temp_c > temp_threshold) {
     digitalWrite(RELAY2_PIN, HIGH);
     fan_on = true;
   } else {
@@ -76,17 +91,20 @@ void relay_auto_run(void) {
   static unsigned long last_print = 0;
   if (millis() - last_print >= 2000) {
     last_print = millis();
-    uint16_t light_lux = (4095 - light_raw) * (4095 - light_raw) / 30000;
     Serial.print("自动 | 光照:");
-    Serial.print(light_sensor_get_level_string(light_level));
+    Serial.print(light_lux);
+    Serial.print(" lux | 阈值:");
+    Serial.print(light_threshold);
     Serial.print(" | 照明:");
     Serial.print(led_on ? "开" : "关");
     Serial.print(" | 温度:");
     Serial.print(temp_c, 1);
-    Serial.print("C | 风扇:");
+    Serial.print("C | 阈值:");
+    Serial.print(temp_threshold);
+    Serial.print(" | 风扇:");
     Serial.println(fan_on ? "开" : "关");
     
-    display_update_info(true, true, light_lux, 119, temp_c, 28.0, led_on, fan_on, wifi_is_connected());
+    display_update_info(true, true, light_lux, light_threshold, temp_c, temp_threshold, led_on, fan_on, wifi_is_connected());
   }
 }
 
@@ -229,9 +247,21 @@ bool relay_set_mode(bool auto_mode_set) {
 void relay_set_temp_threshold(float temp) {
   temp_threshold = temp;
   Serial.printf("Temperature threshold set to: %.1f C\n", temp_threshold);
+  
+  // 保存到 Flash
+  preferences.begin(THRESHOLD_NAMESPACE, false);
+  preferences.putFloat("temp", temp_threshold);
+  preferences.end();
+  Serial.println("Temperature threshold saved to flash");
 }
 
 void relay_set_light_threshold(uint16_t light) {
   light_threshold = light;
   Serial.printf("Light threshold set to: %d lux\n", light_threshold);
+  
+  // 保存到 Flash
+  preferences.begin(THRESHOLD_NAMESPACE, false);
+  preferences.putUShort("light", light_threshold);
+  preferences.end();
+  Serial.println("Light threshold saved to flash");
 }
