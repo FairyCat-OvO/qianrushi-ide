@@ -43,4 +43,11 @@ void mqtt_clear_config(void);
 void mqtt_print_config(void);
 void mqtt_serial_config(void);
 
+// 细分配置指令
+void mqtt_set_server(const char* server);
+void mqtt_set_port(int port);
+void mqtt_set_username(const char* username);
+void mqtt_set_password(const char* password);
+void mqtt_set_device_id(const char* device_id);
+
 #endif

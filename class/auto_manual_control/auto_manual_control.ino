@@ -87,6 +87,34 @@ void loop() {
       Serial.println("MQTT report command received");
       mqtt_report_status();
     }
+    // 细分配置指令
+    else if (input.startsWith("mqtt_config_server ")) {
+      String server = input.substring(19);
+      server.trim();
+      Serial.printf("MQTT set server: %s\n", server.c_str());
+      mqtt_set_server(server.c_str());
+    } else if (input.startsWith("mqtt_config_port ")) {
+      String port_str = input.substring(17);
+      port_str.trim();
+      int port = port_str.toInt();
+      Serial.printf("MQTT set port: %d\n", port);
+      mqtt_set_port(port);
+    } else if (input.startsWith("mqtt_config_username ")) {
+      String username = input.substring(22);
+      username.trim();
+      Serial.printf("MQTT set username: %s\n", username.c_str());
+      mqtt_set_username(username.c_str());
+    } else if (input.startsWith("mqtt_config_password ")) {
+      String password = input.substring(22);
+      password.trim();
+      Serial.println("MQTT set password");
+      mqtt_set_password(password.c_str());
+    } else if (input.startsWith("mqtt_config_device_id ")) {
+      String device_id = input.substring(24);
+      device_id.trim();
+      Serial.printf("MQTT set device ID: %s\n", device_id.c_str());
+      mqtt_set_device_id(device_id.c_str());
+    }
   }
   
   static unsigned long last_led_update = 0;

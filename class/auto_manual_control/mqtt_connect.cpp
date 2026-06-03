@@ -477,3 +477,81 @@ void mqtt_serial_config(void) {
   
   Serial.println("MQTT configuration updated! Will reconnect...");
 }
+
+// 细分配置指令实现
+void mqtt_set_server(const char* server) {
+  strncpy(mqtt_config.server, server, sizeof(mqtt_config.server) - 1);
+  mqtt_save_config(mqtt_config.server, mqtt_config.port, mqtt_config.username, mqtt_config.password, mqtt_config.device_id);
+  
+  client.setServer(mqtt_config.server, mqtt_config.port);
+  
+  if (mqtt_connected) {
+    client.disconnect();
+    mqtt_connected = false;
+    mqtt_status = MQTT_STATUS_DISCONNECTED;
+  }
+  
+  last_reconnect_time = 0;
+  Serial.printf("MQTT server set to: %s\n", mqtt_config.server);
+}
+
+void mqtt_set_port(int port) {
+  mqtt_config.port = port;
+  mqtt_save_config(mqtt_config.server, mqtt_config.port, mqtt_config.username, mqtt_config.password, mqtt_config.device_id);
+  
+  client.setServer(mqtt_config.server, mqtt_config.port);
+  
+  if (mqtt_connected) {
+    client.disconnect();
+    mqtt_connected = false;
+    mqtt_status = MQTT_STATUS_DISCONNECTED;
+  }
+  
+  last_reconnect_time = 0;
+  Serial.printf("MQTT port set to: %d\n", mqtt_config.port);
+}
+
+void mqtt_set_username(const char* username) {
+  strncpy(mqtt_config.username, username, sizeof(mqtt_config.username) - 1);
+  mqtt_save_config(mqtt_config.server, mqtt_config.port, mqtt_config.username, mqtt_config.password, mqtt_config.device_id);
+  
+  if (mqtt_connected) {
+    client.disconnect();
+    mqtt_connected = false;
+    mqtt_status = MQTT_STATUS_DISCONNECTED;
+  }
+  
+  last_reconnect_time = 0;
+  Serial.printf("MQTT username set to: %s\n", mqtt_config.username);
+}
+
+void mqtt_set_password(const char* password) {
+  strncpy(mqtt_config.password, password, sizeof(mqtt_config.password) - 1);
+  mqtt_save_config(mqtt_config.server, mqtt_config.port, mqtt_config.username, mqtt_config.password, mqtt_config.device_id);
+  
+  if (mqtt_connected) {
+    client.disconnect();
+    mqtt_connected = false;
+    mqtt_status = MQTT_STATUS_DISCONNECTED;
+  }
+  
+  last_reconnect_time = 0;
+  Serial.println("MQTT password updated");
+}
+
+void mqtt_set_device_id(const char* device_id) {
+  strncpy(mqtt_config.device_id, device_id, sizeof(mqtt_config.device_id) - 1);
+  mqtt_save_config(mqtt_config.server, mqtt_config.port, mqtt_config.username, mqtt_config.password, mqtt_config.device_id);
+  
+  snprintf(status_topic, sizeof(status_topic), "chemctrl/%s/status", mqtt_config.device_id);
+  snprintf(command_topic, sizeof(command_topic), "chemctrl/%s/command", mqtt_config.device_id);
+  
+  if (mqtt_connected) {
+    client.disconnect();
+    mqtt_connected = false;
+    mqtt_status = MQTT_STATUS_DISCONNECTED;
+  }
+  
+  last_reconnect_time = 0;
+  Serial.printf("MQTT device ID set to: %s\n", mqtt_config.device_id);
+}
