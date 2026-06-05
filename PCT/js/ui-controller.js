@@ -9,9 +9,14 @@ class UIController {
         this.lastTemp = null;
         this.lastLight = null;
         this.manualModeWarning = false;
+        this.deviceTimeoutTimer = null;  // 设备消息超时计时器
+        this.deviceTimeoutSeconds = 7;   // 超时时间（秒）
 
         this.cacheElements();
         this.bindEvents();
+        
+        // 初始化设备状态为离线
+        this.updateDeviceStatus(false);
     }
 
     /**
@@ -228,6 +233,10 @@ class UIController {
             }[status] || '未连接';
             this.mqttStatus.querySelector('.status-text').textContent = statusText;
             this.mqttSwitch.checked = false;
+            // 断开连接时重置阈值初始化状态
+            this.thresholdInitialized = false;
+            // 断开连接时设备也离线
+            this.updateDeviceStatus(false);
         }
     }
 
@@ -276,11 +285,71 @@ class UIController {
         // 当前阈值显示 - 显示设备当前生效的阈值
         if (typeof data.temp_threshold === 'number') {
             this.currentTemp.textContent = data.temp_threshold.toFixed(1);
-            this.tempThreshold.value = data.temp_threshold;
+            // 只在连接成功后首次收到消息时初始化输入框
+            if (!this.thresholdInitialized) {
+                this.tempThreshold.value = data.temp_threshold;
+            }
         }
         if (typeof data.light_threshold === 'number') {
             this.currentLight.textContent = data.light_threshold.toString();
-            this.lightThreshold.value = data.light_threshold;
+            // 只在连接成功后首次收到消息时初始化输入框
+            if (!this.thresholdInitialized) {
+                this.lightThreshold.value = data.light_threshold;
+            }
+        }
+        // 标记阈值已初始化
+        this.thresholdInitialized = true;
+
+        // 更新设备状态 - 只有MQTT连接成功后收到消息才标记设备在线
+        if (window.mqttClient && window.mqttClient.isConnected) {
+            this.updateDeviceStatus(true);
+        }
+    }
+
+    /**
+     * 更新设备状态
+     */
+    updateDeviceStatus(online) {
+        if (this.deviceStatus) {
+            if (online) {
+                // 设备在线 - 重置超时计时器
+                this.resetDeviceTimeout();
+                
+                this.deviceStatus.classList.add('connected');
+                this.deviceStatus.classList.remove('disconnected');
+                this.deviceStatus.querySelector('.status-text').textContent = '在线';
+            } else {
+                // 设备离线 - 清除超时计时器
+                this.clearDeviceTimeout();
+                
+                this.deviceStatus.classList.remove('connected');
+                this.deviceStatus.classList.add('disconnected');
+                this.deviceStatus.querySelector('.status-text').textContent = '离线';
+            }
+        }
+    }
+
+    /**
+     * 重置设备消息超时计时器
+     */
+    resetDeviceTimeout() {
+        // 清除之前的计时器
+        this.clearDeviceTimeout();
+        
+        // 设置新的超时计时器
+        this.deviceTimeoutTimer = setTimeout(() => {
+            this.logger.add('设备消息超时，标记为离线', 'warn');
+            this.updateDeviceStatus(false);
+        }, this.deviceTimeoutSeconds * 1000);
+    }
+
+    /**
+     * 清除设备消息超时计时器
+     */
+    clearDeviceTimeout() {
+        if (this.deviceTimeoutTimer) {
+            clearTimeout(this.deviceTimeoutTimer);
+            this.deviceTimeoutTimer = null;
         }
     }
 

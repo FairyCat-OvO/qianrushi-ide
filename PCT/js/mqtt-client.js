@@ -173,7 +173,7 @@ class MQTTClient {
     }
 
     /**
-     * 启动定时获取状态（每5秒）
+     * 启动定时获取状态（每3秒）
      */
     startStatusTimer() {
         // 如果已有定时器，先停止
@@ -183,7 +183,7 @@ class MQTTClient {
             if (this.isConnected) {
                 this.requestStatus();
             }
-        }, 5000);
+        }, 3000);
     }
 
     /**

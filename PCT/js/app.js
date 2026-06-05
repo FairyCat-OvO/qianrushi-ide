@@ -65,8 +65,45 @@
         // 模拟数据 - 用于离线预览（仅在没有MQTT连接时显示）
         enableOfflinePreview(ui);
 
+        // 初始化主题切换
+        initThemeToggle();
+
         logger.add('系统初始化完成', 'success');
     }
+
+    /**
+     * 初始化主题切换功能
+     */
+    function initThemeToggle() {
+        // 从localStorage读取主题设置，默认深色
+        const savedTheme = localStorage.getItem('app-theme') || 'dark';
+        applyTheme(savedTheme);
+    }
+
+    function applyTheme(theme) {
+        const body = document.body;
+        const html = document.documentElement;
+        if (theme === 'light') {
+            body.classList.add('light-theme');
+            body.classList.remove('dark-theme');
+            html.classList.add('light-theme');
+            html.classList.remove('dark-theme');
+        } else {
+            body.classList.add('dark-theme');
+            body.classList.remove('light-theme');
+            html.classList.add('dark-theme');
+            html.classList.remove('light-theme');
+        }
+    }
+
+    // 全局主题切换函数 - 供HTML onclick调用
+    window.toggleTheme = function() {
+        const body = document.body;
+        const isLight = body.classList.contains('light-theme');
+        const newTheme = isLight ? 'dark' : 'light';
+        applyTheme(newTheme);
+        localStorage.setItem('app-theme', newTheme);
+    };
 
     /**
      * 离线预览模式 - 显示静态默认值

@@ -1,5 +1,6 @@
-/* ==================== 全局变量与重置 ==================== */
-:root {
+/* ==================== 深色主题变量（默认） ==================== */
+:root,
+:root.dark-theme {
     --bg-primary: #0a0e1a;
     --bg-secondary: #0f1626;
     --bg-card: #131a2e;
@@ -26,6 +27,34 @@
     --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* ==================== 浅色主题变量（白天模式） ==================== */
+:root.light-theme {
+    --bg-primary: #f8fafc;
+    --bg-secondary: #f1f5f9;
+    --bg-card: rgba(255, 255, 255, 0.85);
+    --bg-card-hover: rgba(255, 255, 255, 0.95);
+    --bg-input: rgba(255, 255, 255, 0.6);
+    --border-color: rgba(30, 41, 59, 0.1);
+    --border-hover: rgba(0, 148, 212, 0.3);
+    --text-primary: #1e293b;
+    --text-secondary: #64748b;
+    --text-muted: #94a3b8;
+    --accent-primary: #0094d4;
+    --accent-secondary: #00b8e6;
+    --accent-success: #10b981;
+    --accent-warning: #f59e0b;
+    --accent-danger: #ef4444;
+    --accent-cyan: #00d4ff;
+    --accent-purple: #8b5cf6;
+    --glow-primary: 0 0 20px rgba(0, 148, 212, 0.3);
+    --glow-success: 0 0 20px rgba(16, 185, 129, 0.3);
+    --glow-danger: 0 0 20px rgba(239, 68, 68, 0.3);
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.1);
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -43,8 +72,41 @@ html, body {
     padding: 0;
 }
 
-/* 背景动画 */
-body::before {
+/* 浅色主题渐变背景 */
+html.light-theme::before {
+    content: "";
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: 
+        radial-gradient(circle at 20% 20%, rgba(0, 212, 255, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.06) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+    animation: backgroundShift 20s ease-in-out infinite;
+}
+
+/* 浅色主题网格背景 */
+html.light-theme::after {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        linear-gradient(rgba(30, 41, 59, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(30, 41, 59, 0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* 深色主题星空背景 */
+html.dark-theme::before {
     content: "";
     position: fixed;
     top: 0;
@@ -52,17 +114,38 @@ body::before {
     width: 100%;
     height: 100%;
     background: 
-        radial-gradient(circle at 20% 30%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
-        radial-gradient(circle at 80% 70%, rgba(139, 92, 246, 0.06) 0%, transparent 50%),
-        radial-gradient(circle at 50% 50%, rgba(6, 182, 212, 0.04) 0%, transparent 60%);
+        radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.1) 0%, transparent 40%),
+        radial-gradient(circle at 40% 40%, rgba(6, 182, 212, 0.08) 0%, transparent 50%);
     pointer-events: none;
     z-index: 0;
-    animation: backgroundShift 20s ease-in-out infinite;
+    animation: darkBackgroundShift 15s ease-in-out infinite;
+}
+
+/* 深色主题网格 */
+html.dark-theme::after {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        linear-gradient(rgba(59, 130, 246, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(59, 130, 246, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
 }
 
 @keyframes backgroundShift {
-    0%, 100% { transform: translate(0, 0); }
-    50% { transform: translate(20px, -20px); }
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(20px, -20px) scale(1.05); }
+}
+
+@keyframes darkBackgroundShift {
+    0%, 100% { opacity: 0.8; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.02); }
 }
 
 /* ==================== 主布局 ==================== */
@@ -101,11 +184,17 @@ body::before {
 .app-title {
     font-size: 18px;
     font-weight: 700;
-    background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+    background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-cyan) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
     letter-spacing: 0.5px;
+    animation: titleGlow 3s ease-in-out infinite;
+}
+
+@keyframes titleGlow {
+    0%, 100% { filter: drop-shadow(0 0 5px rgba(var(--accent-primary-rgb), 0.3)); }
+    50% { filter: drop-shadow(0 0 15px rgba(var(--accent-cyan-rgb), 0.5)); }
 }
 
 .app-subtitle {
@@ -124,6 +213,78 @@ body::before {
     display: flex;
     gap: 4px;
     -webkit-app-region: no-drag;
+}
+
+/* ==================== 主题切换按钮 ==================== */
+.theme-toggle-btn {
+    width: 32px;
+    height: 28px;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+    position: relative;
+}
+
+.theme-toggle-btn:hover {
+    background: var(--bg-card);
+}
+
+.theme-toggle-btn svg {
+    width: 16px;
+    height: 16px;
+    position: absolute;
+    transition: var(--transition);
+}
+
+.sun-icon {
+    color: var(--text-secondary);
+    opacity: 1;
+    transform: rotate(0deg);
+}
+
+.moon-icon {
+    color: var(--text-secondary);
+    opacity: 0;
+    transform: rotate(-90deg);
+}
+
+/* 浅色主题 - 显示月亮图标 */
+body.light-theme .sun-icon {
+    opacity: 0;
+    transform: rotate(90deg);
+}
+
+body.light-theme .moon-icon {
+    opacity: 1;
+    transform: rotate(0deg);
+    color: #0094d4;
+}
+
+/* 深色主题 - 显示太阳图标 */
+body.dark-theme .sun-icon {
+    opacity: 1;
+    transform: rotate(0deg);
+    color: #f59e0b;
+}
+
+body.dark-theme .moon-icon {
+    opacity: 0;
+    transform: rotate(90deg);
+}
+
+.theme-toggle-btn:hover .sun-icon {
+    color: #f59e0b;
+    transform: rotate(45deg);
+}
+
+.theme-toggle-btn:hover .moon-icon {
+    color: #0094d4;
+    transform: rotate(-45deg);
 }
 
 .window-btn {
@@ -243,14 +404,22 @@ body::before {
 }
 
 .server-tab.active {
-    background: var(--accent-primary);
+    background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-cyan) 100%);
     color: white;
-    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+    box-shadow: 0 4px 16px rgba(0, 148, 212, 0.4);
+    transform: translateY(-1px);
+    animation: activeTabPulse 2s ease-in-out infinite;
+}
+
+@keyframes activeTabPulse {
+    0%, 100% { box-shadow: 0 4px 16px rgba(0, 148, 212, 0.4); }
+    50% { box-shadow: 0 6px 20px rgba(0, 212, 255, 0.6); }
 }
 
 .server-tab:not(.active):hover {
     color: var(--text-primary);
-    background: var(--bg-card-hover);
+    background: rgba(0, 148, 212, 0.08);
+    transform: translateY(-1px);
 }
 
 .server-group {
@@ -463,14 +632,27 @@ input:checked + .slider::before {
 }
 
 .sensor-card {
-    background: var(--bg-input);
+    background: var(--bg-card);
+    backdrop-filter: blur(10px);
     border: 1px solid var(--border-color);
-    border-radius: 10px;
+    border-radius: 14px;
     padding: 16px 12px;
     text-align: center;
     position: relative;
     overflow: hidden;
     transition: var(--transition);
+    animation: cardFloat 4s ease-in-out infinite;
+}
+
+@keyframes cardFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
+}
+
+.sensor-card:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--border-hover);
 }
 
 .sensor-card::after {
@@ -686,27 +868,44 @@ input:checked + .slider::before {
 }
 
 .submit-btn {
-    padding: 6px 16px;
-    background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+    padding: 8px 18px;
+    background: linear-gradient(135deg, #0094d4 0%, #00d4ff 100%);
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     color: white;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 600;
     cursor: pointer;
     transition: var(--transition);
     font-family: inherit;
-    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+    box-shadow: 0 4px 16px rgba(0, 148, 212, 0.4);
     white-space: nowrap;
+    position: relative;
+    overflow: hidden;
+}
+
+.submit-btn::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.submit-btn:hover::before {
+    left: 100%;
 }
 
 .submit-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.5);
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 6px 20px rgba(0, 148, 212, 0.5);
 }
 
 .submit-btn:active {
-    transform: translateY(0);
+    transform: translateY(-1px) scale(0.98);
 }
 
 /* ==================== 执行器面板 ==================== */
@@ -750,14 +949,16 @@ input:checked + .slider::before {
 }
 
 .mode-btn.active {
-    background: var(--accent-primary);
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
     color: white;
-    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);
+    transform: translateY(-1px);
 }
 
 .mode-btn:not(.active):hover {
     color: var(--text-primary);
-    background: var(--bg-card-hover);
+    background: rgba(16, 185, 129, 0.08);
+    transform: translateY(-1px);
 }
 
 .master-switch-row {
@@ -799,20 +1000,38 @@ input:checked + .slider::before {
 }
 
 .actuator-card {
-    background: var(--bg-input);
+    background: var(--bg-card);
+    backdrop-filter: blur(10px);
     border: 1px solid var(--border-color);
-    border-radius: 10px;
+    border-radius: 14px;
     padding: 16px 12px;
     text-align: center;
     transition: var(--transition);
     position: relative;
     overflow: hidden;
+    animation: actuatorPulse 3s ease-in-out infinite;
+}
+
+@keyframes actuatorPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.95; }
+}
+
+.actuator-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
 }
 
 .actuator-card.active {
     border-color: var(--accent-primary);
-    box-shadow: var(--glow-primary);
-    background: linear-gradient(135deg, var(--bg-input) 0%, rgba(59, 130, 246, 0.1) 100%);
+    box-shadow: 0 0 20px rgba(0, 148, 212, 0.3);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(0, 148, 212, 0.1) 100%);
+    animation: actuatorActive 1.5s ease-in-out infinite;
+}
+
+@keyframes actuatorActive {
+    0%, 100% { box-shadow: 0 0 20px rgba(0, 148, 212, 0.3); }
+    50% { box-shadow: 0 0 30px rgba(0, 212, 255, 0.5); }
 }
 
 .actuator-icon {
