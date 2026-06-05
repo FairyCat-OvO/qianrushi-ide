@@ -28,3 +28,9 @@
 
 
 > *希望对你有所帮助，支持汐蓝云鸢谢谢喵！*
+
+*http://www.fairycat.top/*
+
+*https://github.com/FairyCat-OvO*
+
+*https://space.bilibili.com/172974291*
