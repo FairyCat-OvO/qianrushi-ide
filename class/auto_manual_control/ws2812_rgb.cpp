@@ -73,31 +73,61 @@ static unsigned long last_update = 0;
 static int state_index = 0;
 static uint8_t fade_r = 0, fade_g = 0, fade_b = 0;
 
-static void fade_color(uint8_t target_r, uint8_t target_g, uint8_t target_b, unsigned long duration) {
-    unsigned long start_time = millis();
-    uint8_t start_r = fade_r;
-    uint8_t start_g = fade_g;
-    uint8_t start_b = fade_b;
-    
-    while (millis() - start_time < duration) {
-        float progress = (float)(millis() - start_time) / duration;
-        fade_r = start_r + (target_r - start_r) * progress;
-        fade_g = start_g + (target_g - start_g) * progress;
-        fade_b = start_b + (target_b - start_b) * progress;
+// 非阻塞渐变状态机变量
+static bool is_fading = false;
+static uint8_t fade_target_r = 0, fade_target_g = 0, fade_target_b = 0;
+static unsigned long fade_start_time = 0;
+static unsigned long fade_duration = 0;
+static uint8_t fade_start_r = 0, fade_start_g = 0, fade_start_b = 0;
+
+// 渐变是否正在进行中（任何模式都可能触发渐变）
+static bool any_fade_active(void) {
+    return is_fading;
+}
+
+// 在 ws2812_task 开头调用，更新渐变进度（非阻塞）
+static void fade_update(void) {
+    if (!is_fading) return;
+    unsigned long elapsed = millis() - fade_start_time;
+    if (elapsed >= fade_duration) {
+        // 渐变结束
+        fade_r = fade_target_r;
+        fade_g = fade_target_g;
+        fade_b = fade_target_b;
         pixel.setPixelColor(0, pixel.Color(fade_r, fade_g, fade_b));
         pixel.show();
-        delay(5);
+        is_fading = false;
+    } else {
+        float progress = (float)elapsed / fade_duration;
+        fade_r = fade_start_r + (fade_target_r - fade_start_r) * progress;
+        fade_g = fade_start_g + (fade_target_g - fade_start_g) * progress;
+        fade_b = fade_start_b + (fade_target_b - fade_start_b) * progress;
+        pixel.setPixelColor(0, pixel.Color(fade_r, fade_g, fade_b));
+        pixel.show();
     }
-    
-    fade_r = target_r;
-    fade_g = target_g;
-    fade_b = target_b;
-    pixel.setPixelColor(0, pixel.Color(fade_r, fade_g, fade_b));
-    pixel.show();
+}
+
+// 启动一次非阻塞渐变（异步，不等待完成）
+static void fade_to(uint8_t tr, uint8_t tg, uint8_t tb, unsigned long duration) {
+    fade_start_r = fade_r;
+    fade_start_g = fade_g;
+    fade_start_b = fade_b;
+    fade_target_r = tr;
+    fade_target_g = tg;
+    fade_target_b = tb;
+    fade_start_time = millis();
+    fade_duration = duration > 0 ? duration : 1;
+    is_fading = true;
 }
 
 void ws2812_task(bool wifi_connected, bool mqtt_connected, bool led_on, bool fan_on) {
+    // 先更新非阻塞渐变
+    fade_update();
+    
     unsigned long now = millis();
+    
+    // 如果正在渐变，不切换新状态（等待渐变完成）
+    if (is_fading) return;
     
     IndicatorMode new_mode;
     
@@ -194,15 +224,15 @@ void ws2812_task(bool wifi_connected, bool mqtt_connected, bool led_on, bool fan
             if (now - last_time >= 250) {
                 last_time = now;
                 if (state_index == 0) {
-                    fade_color(0, 200, 0, 250);
+                    fade_to(0, 200, 0, 250);
                 } else if (state_index == 1) {
-                    fade_color(0, 0, 0, 250);
+                    fade_to(0, 0, 0, 250);
                 } else if (state_index == 2) {
-                    fade_color(0, 0, 200, 250);
+                    fade_to(0, 0, 200, 250);
                 } else if (state_index == 3) {
-                    fade_color(0, 0, 0, 250);
+                    fade_to(0, 0, 0, 250);
                 } else {
-                    fade_color(200, 0, 0, 250);
+                    fade_to(200, 0, 0, 250);
                 }
                 state_index = (state_index + 1) % 5;
             }
@@ -238,13 +268,13 @@ void ws2812_task(bool wifi_connected, bool mqtt_connected, bool led_on, bool fan
             if (now - last_time >= states[state_index]) {
                 last_time = now;
                 if (state_index == 0) {
-                    fade_color(200, 0, 0, 1000);
+                    fade_to(200, 0, 0, 1000);
                 } else if (state_index == 1) {
-                    fade_color(0, 200, 0, 1000);
+                    fade_to(0, 200, 0, 1000);
                 } else if (state_index == 2) {
-                    fade_color(0, 0, 200, 1000);
+                    fade_to(0, 0, 200, 1000);
                 } else if (state_index == 3) {
-                    fade_color(0, 0, 0, 1000);
+                    fade_to(0, 0, 0, 1000);
                 }
                 if (state_index < 4) {
                     state_index = (state_index + 1) % 5;
